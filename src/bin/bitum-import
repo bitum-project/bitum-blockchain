@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+// Copyright 2019 The Bitum developers.
+// - Mounir R'Quiba
+// Licensed under the GNU Affero General Public License, version 3.
+
+require __DIR__.'/../../vendor/autoload.php';
+require __DIR__ . '/../core/help.php';
+
+use Bitum\Backup;
+use Bitum\BlockchainConfig;
+
+$params = getopt('', [
+	'prefix::',
+    'file::',
+	'force::',
+	'help::',
+]);
+
+$prefix = $params['prefix'] ?? BlockchainConfig::NAME;
+$fileName = $params['file'] ?? './' . BlockchainConfig::NAME . '.tar.gz';
+$force = array_key_exists('force', $params);
+$helpMe = array_key_exists('help', $params);
+
+if ($helpMe) {
+	die($help['import']);
+}
+
+(new Backup($prefix, $fileName, $force))->import();

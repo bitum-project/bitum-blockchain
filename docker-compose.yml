@@ -1,0 +1,114 @@
+version: '3'
+
+services:
+    bitum_node:
+        container_name: bitum-node
+        hostname: bitum-node
+        restart: always
+        build:
+          context: .
+        volumes:
+            - ./:/opt
+        ports:
+            - "8087:8087"
+            - "8088:8088"
+            - "8086:8086"
+            - "3030:3030"
+            - "3031:3031"
+            - "8180:8180"
+        stdin_open: true
+        expose:
+          - "3031"
+          - "3030"
+          - "8087"
+          - "8088"
+          - "8086"
+          - "8180"
+        command: bash /opt/run.sh
+        networks:
+          - overlay
+    bitum_messenger:
+        container_name: bitum-wallet
+        build: ../bitum-wallet/
+        hostname: bitum-wallet
+        restart: always
+        build:
+          context: ../bitum-wallet/
+        volumes:
+            - ../bitum-wallet/:/opt
+        ports:
+            - "4200:4200"
+        stdin_open: true
+        expose:
+          - "4200"
+          - "8180"
+        command: bash /opt/run.sh
+    bitum_explorer_nginx:
+        build: ../bitum-explorer/services/nginx
+        container_name: bitum-explorer-nginx
+        restart: always
+        working_dir: /www
+        volumes:
+            - ../bitum-explorer/:/www
+        ports:
+          - "8000:80"
+        networks:
+          - overlay
+    bitum_explorer_phpfpm:
+        build: ../bitum-explorer/services/phpfpm
+        container_name: bitum-explorer-phpfpm
+        hostname: phpfpm
+        restart: always
+        working_dir: /www
+        volumes:
+            - ../bitum-explorer/:/www
+        # command: bash /www/services/phpfpm/phpfpm.sh
+        networks:
+          - overlay
+    bitum_website_nginx:
+        build: ../bitum-website-viewer/services/nginx
+        container_name: bitum-website-viewer-nginx
+        restart: always
+        working_dir: /www
+        volumes:
+            - ../bitum-website-viewer/:/www
+        ports:
+          - "8001:80"
+        networks:
+          - overlay
+    bitum_website_phpfpm:
+        build: ../bitum-website-viewer/services/phpfpm
+        container_name: bitum-website-viewer-phpfpm
+        hostname: phpfpm
+        restart: always
+        working_dir: /www
+        volumes:
+            - ../bitum-website-viewer/:/www
+        # command: bash /www/services/phpfpm/phpfpm.sh
+        networks:
+          - overlay
+    elasticsearch:
+        container_name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.0.1
+        volumes:
+          - esdata:/usr/share/elasticsearch/data
+        environment:
+          - bootstrap.memory_lock=true
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          - discovery.type=single-node
+        ports:
+          - "9308:9300"
+          - "9208:9200"
+        networks:
+          - overlay
+    kibana:
+      container_name: kibana
+      image: docker.elastic.co/kibana/kibana:7.0.1
+      ports:
+        - "5608:5601"
+      networks:
+            - overlay
+volumes:
+  esdata:
+networks:
+    overlay:

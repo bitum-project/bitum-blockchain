@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+// Copyright 2019 The Bitum developers.
+// - Mounir R'Quiba
+// Licensed under the GNU Affero General Public License, version 3.
+
+require __DIR__.'/../../vendor/autoload.php';
+require __DIR__ . '/../core/help.php';
+
+use Bitum\ES\ESBlockchainProvider;
+use Bitum\BlockchainConfig;
+
+$params = getopt('', [
+	'prefix::',
+	'height::',
+	'help::',
+]);
+
+$prefix = $params['prefix'] ?? BlockchainConfig::NAME;
+$height = $params['height'] ?? 0;
+$helpMe = array_key_exists('help', $params);
+
+if ($helpMe) {
+	die($help['reset']);
+}
+
+$esService = ESBlockchainProvider::getInstance($prefix);
+$esService->resetAll($height);
